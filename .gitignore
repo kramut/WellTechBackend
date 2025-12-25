@@ -141,3 +141,10 @@ vite.config.ts.timestamp-*
 # Additional project-specific
 .DS_Store
 /src/generated/prisma
+
+# Prisma config files (not needed, Prisma uses schema.prisma)
+prisma.config.js
+prisma.config.js.map
+prisma.config.d.ts
+prisma.config.d.ts.map
+prisma.config.ts.bak
