@@ -46,9 +46,9 @@ export const analyticsService = {
       },
     });
 
-    const totalClicks = earnings.reduce((sum: number, e) => sum + e.clicks, 0);
-    const totalConversions = earnings.reduce((sum: number, e) => sum + e.conversions, 0);
-    const totalRevenue = earnings.reduce((sum: number, e) => sum + Number(e.revenue), 0);
+    const totalClicks = earnings.reduce((sum: number, e: { clicks: number }) => sum + e.clicks, 0);
+    const totalConversions = earnings.reduce((sum: number, e: { conversions: number }) => sum + e.conversions, 0);
+    const totalRevenue = earnings.reduce((sum: number, e: { revenue: number | string }) => sum + Number(e.revenue), 0);
     const conversionRate = totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0;
 
     // Top prodotti per revenue
@@ -59,11 +59,11 @@ export const analyticsService = {
       take: 5,
     });
 
-    const productsWithRevenue = topProducts.map((product) => {
+    const productsWithRevenue = topProducts.map((product: { id: number; name: string; category: string; affiliateEarnings: Array<{ revenue: number | string; clicks: number; conversions: number }> }) => {
       const productEarnings = product.affiliateEarnings;
-      const revenue = productEarnings.reduce((sum: number, e) => sum + Number(e.revenue), 0);
-      const clicks = productEarnings.reduce((sum: number, e) => sum + e.clicks, 0);
-      const conversions = productEarnings.reduce((sum: number, e) => sum + e.conversions, 0);
+      const revenue = productEarnings.reduce((sum: number, e: { revenue: number | string }) => sum + Number(e.revenue), 0);
+      const clicks = productEarnings.reduce((sum: number, e: { clicks: number }) => sum + e.clicks, 0);
+      const conversions = productEarnings.reduce((sum: number, e: { conversions: number }) => sum + e.conversions, 0);
 
       return {
         id: product.id,
@@ -74,7 +74,7 @@ export const analyticsService = {
         conversions,
         conversionRate: clicks > 0 ? Number(((conversions / clicks) * 100).toFixed(2)) : 0,
       };
-    }).sort((a, b) => b.revenue - a.revenue);
+    }).sort((a: { revenue: number }, b: { revenue: number }) => b.revenue - a.revenue);
 
     // Articoli più visti
     const topArticles = await prisma.article.findMany({
@@ -126,7 +126,7 @@ export const analyticsService = {
 
     // Raggruppa per giorno
     const revenueByDay: Record<string, number> = {};
-    recentEarnings.forEach((earning) => {
+    recentEarnings.forEach((earning: { createdAt: Date; revenue: number | string }) => {
       const date = earning.createdAt.toISOString().split('T')[0];
       revenueByDay[date] = (revenueByDay[date] || 0) + Number(earning.revenue);
     });
@@ -166,7 +166,7 @@ export const analyticsService = {
       },
       topProducts: productsWithRevenue,
       topArticles,
-      topVideos: topVideos.map((video) => ({
+      topVideos: topVideos.map((video: { id: number; title: string; tiktokViews: number; tiktokUrl: string | null; article: { id: number; title: string; slug: string } | null }) => ({
         id: video.id,
         title: video.title,
         tiktokViews: video.tiktokViews,

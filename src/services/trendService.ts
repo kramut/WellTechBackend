@@ -101,7 +101,7 @@ export const trendService = {
 
     return {
       saved: result.count,
-      topTrends: topTrends.map(t => ({
+      topTrends: topTrends.map((t: { keyword: string; score: number; source: string; category: string | null; createdAt: Date }) => ({
         keyword: t.keyword,
         score: t.score,
         source: t.source,

@@ -38,9 +38,9 @@ export const affiliateEarningService = {
       },
     });
 
-    const totalClicks = earnings.reduce((sum: number, e) => sum + e.clicks, 0);
-    const totalConversions = earnings.reduce((sum: number, e) => sum + e.conversions, 0);
-    const totalRevenue = earnings.reduce((sum: number, e) => sum + Number(e.revenue), 0);
+    const totalClicks = earnings.reduce((sum: number, e: { clicks: number }) => sum + e.clicks, 0);
+    const totalConversions = earnings.reduce((sum: number, e: { conversions: number }) => sum + e.conversions, 0);
+    const totalRevenue = earnings.reduce((sum: number, e: { revenue: number | string }) => sum + Number(e.revenue), 0);
     const conversionRate = totalClicks > 0 ? (totalConversions / totalClicks) * 100 : 0;
 
     return {

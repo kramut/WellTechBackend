@@ -14,7 +14,10 @@ export const trendController = {
 
   async getTrendsByCategory(req: Request, res: Response) {
     try {
-      const category = req.params.category;
+      const category = req.params.category as string;
+      if (!category) {
+        return res.status(400).json({ error: 'Category parameter is required' });
+      }
       const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
       const trends = await trendService.getTrendsByCategory(category, limit);
       res.json(trends);
