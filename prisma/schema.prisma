@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id                    Int       @id @default(autoincrement())
+  name                  String
+  category              String
+  description           String?   @db.Text
+  price                 Decimal?  @db.Decimal(10, 2)
+  affiliateLink         String    @map("affiliate_link") @db.Text
+  affiliateProgram      String?   @map("affiliate_program")
+  commissionPercentage  Decimal?  @map("commission_percentage") @db.Decimal(5, 2)
+  imageUrl              String?   @map("image_url") @db.Text
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  affiliateEarnings     AffiliateEarning[]
+
+  @@map("products")
+}
+
+model Article {
+  id                  Int       @id @default(autoincrement())
+  title               String
+  slug                String    @unique
+  category            String
+  content             String    @db.Text
+  seoMetaTitle        String?   @map("seo_meta_title")
+  seoMetaDescription  String?   @map("seo_meta_description")
+  featuredImageUrl    String?   @map("featured_image_url") @db.Text
+  productIds          Int[]     @map("product_ids")
+  publishedAt         DateTime? @map("published_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  views               Int       @default(0)
+
+  videos              Video[]
+
+  @@map("articles")
+}
+
+model Video {
+  id           Int       @id @default(autoincrement())
+  title        String
+  articleId    Int?      @map("article_id")
+  script       String    @db.Text
+  videoUrl     String?   @map("video_url") @db.Text
+  tiktokUrl    String?   @map("tiktok_url") @db.Text
+  tiktokViews  Int       @default(0) @map("tiktok_views")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  article      Article?  @relation(fields: [articleId], references: [id])
+
+  @@map("videos")
+}
+
+model AffiliateEarning {
+  id          Int       @id @default(autoincrement())
+  productId   Int       @map("product_id")
+  clicks      Int       @default(0)
+  conversions Int       @default(0)
+  revenue     Decimal   @default(0) @db.Decimal(10, 2)
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  product     Product   @relation(fields: [productId], references: [id])
+
+  @@map("affiliate_earnings")
+}
+
+model Trend {
+  id          Int       @id @default(autoincrement())
+  keyword     String
+  source      String    // "google", "reddit", "amazon"
+  score       Float
+  category    String?
+  metadata    Json?     // Dati aggiuntivi
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  @@map("trends")
+}
