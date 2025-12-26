@@ -9,6 +9,7 @@ import videosRouter from './routes/videos';
 import affiliateEarningsRouter from './routes/affiliateEarnings';
 import analyticsRouter from './routes/analytics';
 import workflowsRouter from './routes/workflows';
+import productCandidatesRouter from './routes/productCandidates';
 
 // Middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -35,6 +36,8 @@ app.get('/', (req: Request, res: Response) => {
       affiliateEarnings: '/api/affiliate-earnings',
       analytics: '/api/analytics/dashboard',
       workflows: '/api/workflows',
+      productCandidates: '/api/product-candidates',
+      clickbank: '/api/workflows/clickbank',
     },
     preview: '/api/preview',
   });
@@ -136,6 +139,13 @@ app.get('/api/preview', (req: Request, res: Response) => {
             ]
           }
         }
+      },
+      clickbank: {
+        'GET /api/workflows/clickbank/test': 'Testa connessione API ClickBank',
+        'GET /api/workflows/clickbank/endpoints': 'Testa tutti gli endpoint disponibili',
+        'GET /api/workflows/clickbank/orders': 'Ottieni ordini ClickBank (query: ?startDate=...&limit=...)',
+        'GET /api/workflows/clickbank/stats': 'Ottieni statistiche ClickBank (query: ?startDate=...)',
+        note: 'Richiede CLICKBANK_API_KEY nelle variabili d\'ambiente'
       }
     },
     database: {
@@ -151,6 +161,7 @@ app.use('/api/videos', videosRouter);
 app.use('/api/affiliate-earnings', affiliateEarningsRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/workflows', workflowsRouter);
+app.use('/api/product-candidates', productCandidatesRouter);
 
 // Error handler (deve essere l'ultimo middleware)
 app.use(errorHandler);
