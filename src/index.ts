@@ -36,10 +36,12 @@ app.get('/', (req: Request, res: Response) => {
       affiliateEarnings: '/api/affiliate-earnings',
       analytics: '/api/analytics/dashboard',
       workflows: '/api/workflows',
+      workflowsTrends: '/api/workflows/trends',
+      workflowsClickBank: '/api/workflows/clickbank',
       productCandidates: '/api/product-candidates',
-      clickbank: '/api/workflows/clickbank',
     },
     preview: '/api/preview',
+    testClickBank: '/api/workflows/clickbank',
   });
 });
 
