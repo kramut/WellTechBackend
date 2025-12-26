@@ -83,3 +83,28 @@ model Trend {
   
   @@map("trends")
 }
+
+model ProductCandidate {
+  id                  Int       @id @default(autoincrement())
+  name                String
+  category            String
+  description         String?   @db.Text
+  price               Decimal?  @db.Decimal(10, 2)
+  affiliateLink       String    @map("affiliate_link") @db.Text
+  affiliateProgram    String    @map("affiliate_program") // "awin", "clickbank", "amazon"
+  commissionPercentage Decimal? @map("commission_percentage") @db.Decimal(5, 2)
+  imageUrl            String?   @map("image_url") @db.Text
+  rating              Float?
+  reviewCount         Int?      @map("review_count")
+  source              String    // "awin", "clickbank", etc.
+  sourceId            String?   @map("source_id") // ID nel sistema sorgente
+  status              String    @default("pending") // "pending", "approved", "rejected"
+  rejectionReason     String?   @map("rejection_reason") @db.Text
+  approvedAt          DateTime? @map("approved_at")
+  approvedBy          String?   @map("approved_by") // User ID o email
+  metadata            Json?     // Dati aggiuntivi
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  
+  @@map("product_candidates")
+}
