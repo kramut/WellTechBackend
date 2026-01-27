@@ -77,3 +77,39 @@ export interface UpdateAffiliateEarningInput {
   revenue?: number;
 }
 
+export interface CreateProductCandidateInput {
+  name: string;
+  category: string;
+  description?: string;
+  price?: number;
+  affiliateLink: string;
+  affiliateProgram: string; // "awin", "clickbank", "amazon"
+  commissionPercentage?: number;
+  imageUrl?: string;
+  rating?: number;
+  reviewCount?: number;
+  source: string; // "awin", "clickbank", etc.
+  sourceId?: string; // ID nel sistema sorgente
+  metadata?: Record<string, any>;
+}
+
+export interface UpdateProductCandidateInput {
+  name?: string;
+  category?: string;
+  description?: string;
+  price?: number;
+  affiliateLink?: string;
+  affiliateProgram?: string;
+  commissionPercentage?: number;
+  imageUrl?: string;
+  rating?: number;
+  reviewCount?: number;
+  source?: string;
+  sourceId?: string;
+  status?: string; // "pending", "approved", "rejected"
+  rejectionReason?: string;
+  approvedAt?: Date;
+  approvedBy?: string;
+  metadata?: Record<string, any>;
+}
+
