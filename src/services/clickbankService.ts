@@ -38,20 +38,19 @@ export class ClickBankService {
   async testConnection(): Promise<{ success: boolean; message: string; data?: any }> {
     try {
       // Prova endpoint marketplace (compatibile anche senza API secret)
-      const response = await this.client.get('/rest/1.3/marketplace/products', {
-        params: {
-          keyword: 'health',
-          page: 1,
-          limit: 1,
-        },
+      const response = await this.searchMarketplaceProducts({
+        keyword: 'health',
+        page: 1,
+        limit: 1,
       });
 
       return {
         success: true,
         message: 'Connessione ClickBank Marketplace API riuscita',
         data: {
-          status: response.status,
-          resultCount: Array.isArray(response.data) ? response.data.length : response.data?.results?.length || 0,
+          status: response?.status ?? 200,
+          endpoint: response?.endpoint,
+          resultCount: Array.isArray(response?.data) ? response.data.length : response?.data?.results?.length || 0,
         },
       };
     } catch (error: any) {
@@ -153,14 +152,39 @@ export class ClickBankService {
     limit?: number;
   }): Promise<any> {
     try {
-      const response = await this.client.get('/rest/1.3/marketplace/products', {
-        params: {
-          keyword: filters?.keyword || 'health',
-          page: filters?.page ?? 1,
-          limit: filters?.limit ?? 10,
-        },
-      });
-      return response.data;
+      const params = {
+        keyword: filters?.keyword || 'health',
+        page: filters?.page ?? 1,
+        limit: filters?.limit ?? 10,
+      };
+
+      const candidateEndpoints = [
+        '/rest/1.3/marketplace/products',
+        '/rest/1.3/marketplace/search',
+        '/rest/1.3/products',
+        '/rest/1.3/marketplace/products/list',
+      ];
+
+      const errors: Array<{ endpoint: string; status?: number; error?: string }> = [];
+
+      for (const endpoint of candidateEndpoints) {
+        try {
+          const response = await this.client.get(endpoint, { params });
+          return {
+            endpoint,
+            status: response.status,
+            data: response.data,
+          };
+        } catch (error: any) {
+          errors.push({
+            endpoint,
+            status: error.response?.status,
+            error: error.response?.statusText || error.message,
+          });
+        }
+      }
+
+      throw new Error(`No marketplace endpoint available. Tried: ${errors.map((e) => `${e.endpoint} (${e.status})`).join(', ')}`);
     } catch (error: any) {
       console.error('ClickBank marketplace search error:', error.response?.data || error.message);
       throw new Error(`Failed to search marketplace: ${error.message}`);
