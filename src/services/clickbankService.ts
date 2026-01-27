@@ -16,11 +16,14 @@ export class ClickBankService {
 
   constructor(config: ClickBankConfig) {
     this.config = config;
+    const authHeader = this.config.apiSecret
+      ? `Basic ${Buffer.from(`${this.config.apiKey}:${this.config.apiSecret}`).toString('base64')}`
+      : this.config.apiKey;
 
     this.client = axios.create({
       baseURL: 'https://api.clickbank.com',
       headers: {
-        'Authorization': this.config.apiKey,
+        'Authorization': authHeader,
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
