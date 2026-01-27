@@ -83,11 +83,24 @@ export const clickbankController = {
       }
 
       const { keyword, page, limit } = req.query;
-      const results = await service.searchMarketplaceProducts({
-        keyword: typeof keyword === 'string' ? keyword : undefined,
-        page: typeof page === 'string' ? parseInt(page) : undefined,
-        limit: typeof limit === 'string' ? parseInt(limit) : undefined,
-      });
+      const filters: { keyword?: string; page?: number; limit?: number } = {};
+      if (typeof keyword === 'string' && keyword.trim()) {
+        filters.keyword = keyword.trim();
+      }
+      if (typeof page === 'string' && page.trim()) {
+        const parsedPage = parseInt(page, 10);
+        if (!Number.isNaN(parsedPage)) {
+          filters.page = parsedPage;
+        }
+      }
+      if (typeof limit === 'string' && limit.trim()) {
+        const parsedLimit = parseInt(limit, 10);
+        if (!Number.isNaN(parsedLimit)) {
+          filters.limit = parsedLimit;
+        }
+      }
+
+      const results = await service.searchMarketplaceProducts(filters);
 
       res.json({
         success: true,
