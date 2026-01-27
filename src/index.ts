@@ -36,7 +36,8 @@ app.get('/api/workflows/clickbank', (req: Request, res: Response) => {
       test: '/api/workflows/clickbank/test',
       endpoints: '/api/workflows/clickbank/endpoints',
       orders: '/api/workflows/clickbank/orders',
-      stats: '/api/workflows/clickbank/stats'
+      stats: '/api/workflows/clickbank/stats',
+      marketplace: '/api/workflows/clickbank/marketplace'
     }
   });
 });
@@ -216,7 +217,8 @@ app.get('/api/workflows/clickbank/endpoints', (req: Request, res: Response) => {
       '/api/workflows/clickbank/test',
       '/api/workflows/clickbank/endpoints',
       '/api/workflows/clickbank/orders',
-      '/api/workflows/clickbank/stats'
+      '/api/workflows/clickbank/stats',
+      '/api/workflows/clickbank/marketplace'
     ],
     timestamp: new Date().toISOString()
   });
@@ -238,6 +240,14 @@ app.get('/api/workflows/clickbank/stats', (req: Request, res: Response) => {
   });
 });
 
+app.get('/api/workflows/clickbank/marketplace', (req: Request, res: Response) => {
+  res.status(503).json({
+    error: 'ClickBank controller not loaded yet',
+    message: 'Controller is loading asynchronously. Try again in a few seconds.',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Prova a caricare il controller in modo asincrono (non blocca l'avvio)
 console.log('📋 Attempting to load ClickBank controller asynchronously...');
 setTimeout(() => {
@@ -250,6 +260,7 @@ setTimeout(() => {
     app.get('/api/workflows/clickbank/endpoints', clickbankController.testEndpoints);
     app.get('/api/workflows/clickbank/orders', clickbankController.getOrders);
     app.get('/api/workflows/clickbank/stats', clickbankController.getStats);
+    app.get('/api/workflows/clickbank/marketplace', clickbankController.searchMarketplaceProducts);
     
     console.log('✅ All ClickBank routes upgraded to use real controller');
   } catch (error) {

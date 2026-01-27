@@ -46,6 +46,7 @@ try {
   router.get('/clickbank/endpoints', clickbankController.testEndpoints);
   router.get('/clickbank/orders', clickbankController.getOrders);
   router.get('/clickbank/stats', clickbankController.getStats);
+  router.get('/clickbank/marketplace', clickbankController.searchMarketplaceProducts);
   
   console.log('✅ All ClickBank routes registered');
 } catch (error) {

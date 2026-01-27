@@ -71,6 +71,38 @@ export const clickbankController = {
   },
 
   /**
+   * Cerca prodotti nel Marketplace ClickBank
+   */
+  async searchMarketplaceProducts(req: Request, res: Response) {
+    try {
+      const service = getClickBankService();
+      if (!service) {
+        return res.status(400).json({
+          error: 'ClickBank API key non configurata',
+        });
+      }
+
+      const { keyword, page, limit } = req.query;
+      const results = await service.searchMarketplaceProducts({
+        keyword: typeof keyword === 'string' ? keyword : undefined,
+        page: typeof page === 'string' ? parseInt(page) : undefined,
+        limit: typeof limit === 'string' ? parseInt(limit) : undefined,
+      });
+
+      res.json({
+        success: true,
+        results,
+      });
+    } catch (error: any) {
+      console.error('ClickBank marketplace search error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Errore durante la ricerca Marketplace',
+      });
+    }
+  },
+
+  /**
    * Ottiene ordini ClickBank
    */
   async getOrders(req: Request, res: Response) {

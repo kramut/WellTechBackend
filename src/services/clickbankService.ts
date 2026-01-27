@@ -24,6 +24,7 @@ export class ClickBankService {
       baseURL: 'https://api.clickbank.com',
       headers: {
         'Authorization': authHeader,
+        'X-API-Key': this.config.apiKey,
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
@@ -36,21 +37,21 @@ export class ClickBankService {
    */
   async testConnection(): Promise<{ success: boolean; message: string; data?: any }> {
     try {
-      // Prova endpoint ordini (più comune e affidabile)
-      const response = await this.client.get('/rest/1.3/orders2', {
+      // Prova endpoint marketplace (compatibile anche senza API secret)
+      const response = await this.client.get('/rest/1.3/marketplace/products', {
         params: {
-          startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          keyword: 'health',
+          page: 1,
           limit: 1,
         },
       });
 
       return {
         success: true,
-        message: 'Connessione ClickBank API riuscita',
+        message: 'Connessione ClickBank Marketplace API riuscita',
         data: {
           status: response.status,
-          hasOrders: Array.isArray(response.data) && response.data.length > 0,
-          orderCount: Array.isArray(response.data) ? response.data.length : 0,
+          resultCount: Array.isArray(response.data) ? response.data.length : response.data?.results?.length || 0,
         },
       };
     } catch (error: any) {
@@ -141,6 +142,29 @@ export class ClickBankService {
     }
 
     return results;
+  }
+
+  /**
+   * Cerca prodotti nel Marketplace ClickBank
+   */
+  async searchMarketplaceProducts(filters?: {
+    keyword?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<any> {
+    try {
+      const response = await this.client.get('/rest/1.3/marketplace/products', {
+        params: {
+          keyword: filters?.keyword || 'health',
+          page: filters?.page ?? 1,
+          limit: filters?.limit ?? 10,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('ClickBank marketplace search error:', error.response?.data || error.message);
+      throw new Error(`Failed to search marketplace: ${error.message}`);
+    }
   }
 }
 
