@@ -198,48 +198,65 @@ try {
   console.error('❌ Error loading workflows routes:', error);
 }
 
-// Carica il controller ClickBank e registra le route DOPO le altre route
-// IMPORTANTE: Questo è in un try-catch per non bloccare l'avvio del server
-console.log('📋 Loading ClickBank controller...');
-let clickbankControllerLoaded = false;
+// ClickBank routes - versione semplificata che non blocca l'avvio
+// Registriamo prima gli endpoint base, poi proviamo a caricare il controller
+app.get('/api/workflows/clickbank/test', (req: Request, res: Response) => {
+  res.json({
+    message: 'ClickBank test endpoint - controller loading...',
+    timestamp: new Date().toISOString(),
+    note: 'This is a fallback endpoint. Check logs for controller status.'
+  });
+});
 
-// Carica il controller in modo asincrono per non bloccare l'avvio
-setImmediate(() => {
+app.get('/api/workflows/clickbank/endpoints', (req: Request, res: Response) => {
+  res.json({
+    message: 'ClickBank endpoints test',
+    availableEndpoints: [
+      '/api/workflows/clickbank/test',
+      '/api/workflows/clickbank/endpoints',
+      '/api/workflows/clickbank/orders',
+      '/api/workflows/clickbank/stats'
+    ],
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/workflows/clickbank/orders', (req: Request, res: Response) => {
+  res.status(503).json({
+    error: 'ClickBank controller not loaded yet',
+    message: 'Controller is loading asynchronously. Try again in a few seconds.',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/api/workflows/clickbank/stats', (req: Request, res: Response) => {
+  res.status(503).json({
+    error: 'ClickBank controller not loaded yet',
+    message: 'Controller is loading asynchronously. Try again in a few seconds.',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Prova a caricare il controller in modo asincrono (non blocca l'avvio)
+console.log('📋 Attempting to load ClickBank controller asynchronously...');
+setTimeout(() => {
   try {
     const { clickbankController } = require('./controllers/clickbankController');
-    console.log('✅ ClickBank controller loaded');
-    clickbankControllerLoaded = true;
+    console.log('✅ ClickBank controller loaded successfully');
     
+    // Sostituisci gli endpoint con quelli reali
     app.get('/api/workflows/clickbank/test', clickbankController.testConnection);
     app.get('/api/workflows/clickbank/endpoints', clickbankController.testEndpoints);
     app.get('/api/workflows/clickbank/orders', clickbankController.getOrders);
     app.get('/api/workflows/clickbank/stats', clickbankController.getStats);
     
-    console.log('✅ All ClickBank routes registered');
+    console.log('✅ All ClickBank routes upgraded to use real controller');
   } catch (error) {
-    console.error('❌ Error loading ClickBank controller:', error);
+    console.error('❌ Error loading ClickBank controller (non-blocking):', error);
     console.error('Error details:', error instanceof Error ? error.stack : error);
-    clickbankControllerLoaded = false;
-    
-    // Fallback endpoints che funzionano sempre
-    app.get('/api/workflows/clickbank/test', (req: Request, res: Response) => {
-      res.status(500).json({
-        error: 'ClickBank controller not loaded',
-        message: error instanceof Error ? error.message : 'Unknown error',
-        hint: 'Check server logs for details',
-        timestamp: new Date().toISOString(),
-        controllerLoaded: clickbankControllerLoaded
-      });
-    });
-    
-    app.get('/api/workflows/clickbank/endpoints', (req: Request, res: Response) => {
-      res.status(500).json({
-        error: 'ClickBank controller not loaded',
-        timestamp: new Date().toISOString()
-      });
-    });
+    console.log('⚠️ ClickBank endpoints will use fallback handlers');
   }
-});
+}, 1000); // Aspetta 1 secondo dopo l'avvio del server
 
 app.use('/api/product-candidates', productCandidatesRouter);
 
