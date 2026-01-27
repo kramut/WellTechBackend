@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
-    "start": "npx prisma migrate deploy && node dist/index.js",
+    "start": "if [ \"$PRISMA_MIGRATE_SKIP\" = \"true\" ]; then node dist/index.js; else npx prisma migrate deploy && node dist/index.js; fi",
     "postinstall": "npx prisma generate",
     "migrate:deploy": "npx prisma migrate deploy",
     "migrate": "npx prisma migrate deploy",
@@ -25,6 +25,7 @@
     "prisma": "^6.0.0"
   },
   "devDependencies": {
+    "@railway/cli": "^4.27.3",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.2",
