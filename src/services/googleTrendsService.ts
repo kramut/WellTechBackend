@@ -159,7 +159,7 @@ export const googleTrendsService = {
       'sustainability': ['sustainability', 'green energy', 'eco friendly', 'solar energy', 'renewable energy', 'carbon footprint'],
     };
 
-    const keywords = categoryKeywords[category] ?? categoryKeywords['wellbeing'] ?? [];
-    return this.getTrendsForKeywords(keywords, geo);
+    const keywords: string[] = categoryKeywords[category] ?? categoryKeywords['wellbeing'] ?? [];
+    return this.getTrendsForKeywords(keywords ?? [], geo);
   },
 };
