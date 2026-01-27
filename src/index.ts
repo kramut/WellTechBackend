@@ -54,6 +54,7 @@ app.get('/', (req: Request, res: Response) => {
   res.json({ 
     message: 'WellTech Backend API is running!',
     version: '1.0.0',
+    buildTag: 'cb-route-fix-2026-01-27',
     status: '✅ Server attivo',
       endpoints: {
       products: '/api/products',
