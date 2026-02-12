@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { productCandidateController } from '../controllers/productCandidateController';
 import { landingPageController } from '../controllers/landingPageController';
+import { contentGeneratorController } from '../controllers/contentGeneratorController';
 
 const router = Router();
 
@@ -10,6 +11,9 @@ router.post('/analyze-all', landingPageController.analyzeAll);
 router.get('/:id', productCandidateController.getById);
 router.get('/:id/analysis', landingPageController.getAnalysis);
 router.post('/:id/analyze', landingPageController.analyzeOne);
+router.post('/:id/generate-content', contentGeneratorController.generateAllContent);
+router.post('/:id/generate-article', contentGeneratorController.generateArticleEndpoint);
+router.post('/:id/generate-video', contentGeneratorController.generateVideoEndpoint);
 router.post('/', productCandidateController.create);
 router.put('/:id', productCandidateController.update);
 router.post('/:id/approve', productCandidateController.approve);
