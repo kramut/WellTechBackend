@@ -131,9 +131,8 @@ function buildVoiceoverText(parsed: ParsedScript): string {
  * Build a Shotstack Edit API timeline for a short social video.
  * 
  * Structure:
- * - Track 1 (top): Text overlays (hook + CTA)
- * - Track 2 (middle): TTS voiceover
- * - Track 3 (bottom): Solid color background
+ * - Track 1 (top): Text overlays (hook + CTA) using html assets
+ * - Track 2 (middle): TTS voiceover using text-to-speech asset
  * 
  * Duration: 8-10 seconds as requested
  */
@@ -143,45 +142,47 @@ function buildTimeline(
   ctaText: string,
   videoDurationSec: number = 10
 ) {
-  // Shotstack timeline
+  // Keep voiceover short for 10s video
+  const shortVoiceover = voiceoverText.substring(0, 300);
+
   return {
     timeline: {
-      background: '#000000',
+      background: '#1a1a2e',
       tracks: [
-        // Track 1: Text overlays
+        // Track 1: Text overlays (on top)
         {
           clips: [
-            // Hook text (first 3 seconds)
+            // Hook text (first 4 seconds)
             {
               asset: {
                 type: 'html',
-                html: `<p style="font-family: 'Montserrat'; color: #ffffff; font-size: 42px; font-weight: 800; text-align: center; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); padding: 20px;">${escapeHtml(hookText)}</p>`,
+                html: `<p>${escapeHtml(hookText)}</p>`,
+                css: "p { font-family: 'Montserrat'; color: #ffffff; font-size: 38px; font-weight: 800; text-align: center; }",
                 width: 900,
                 height: 400,
               },
               start: 0,
-              length: 3,
+              length: 4,
               position: 'center',
               transition: {
                 in: 'fade',
                 out: 'fade',
               },
-              effect: 'zoomIn',
             },
-            // CTA text (last 2 seconds)
+            // CTA text (last 3 seconds)
             {
               asset: {
                 type: 'html',
-                html: `<p style="font-family: 'Montserrat'; color: #FFD700; font-size: 32px; font-weight: 700; text-align: center; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); padding: 20px;">👆 ${escapeHtml(ctaText)}</p>`,
+                html: `<p>${escapeHtml(ctaText)}</p>`,
+                css: "p { font-family: 'Montserrat'; color: #FFD700; font-size: 30px; font-weight: 700; text-align: center; }",
                 width: 900,
                 height: 200,
               },
-              start: videoDurationSec - 2.5,
-              length: 2.5,
+              start: videoDurationSec - 3,
+              length: 3,
               position: 'bottom',
-              offset: { y: -0.1 },
               transition: {
-                in: 'slideUp',
+                in: 'fade',
               },
             },
           ],
@@ -192,27 +193,11 @@ function buildTimeline(
             {
               asset: {
                 type: 'text-to-speech',
-                text: voiceoverText.substring(0, 500), // Limit for short video
-                language: 'it-IT',
+                text: shortVoiceover,
                 voice: 'Giorgio',
               },
               start: 0.5,
-              length: videoDurationSec - 1,
-            },
-          ],
-        },
-        // Track 3: Background gradient (dark wellness theme)
-        {
-          clips: [
-            {
-              asset: {
-                type: 'html',
-                html: '<div style="width: 100%; height: 100%; background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);"></div>',
-                width: 1080,
-                height: 1920,
-              },
-              start: 0,
-              length: videoDurationSec,
+              length: 'auto',
             },
           ],
         },
@@ -220,13 +205,8 @@ function buildTimeline(
     },
     output: {
       format: 'mp4',
-      resolution: 'hd', // 1080p
-      aspectRatio: '9:16', // Vertical for TikTok/Reels
-      fps: 30,
-      size: {
-        width: 1080,
-        height: 1920,
-      },
+      resolution: 'sd',
+      aspectRatio: '9:16',
     },
   };
 }
