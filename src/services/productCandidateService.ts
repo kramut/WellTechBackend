@@ -122,6 +122,49 @@ export const productCandidateService = {
     });
   },
 
+  async createMany(items: CreateProductCandidateInput[]) {
+    if (!prisma) throw new Error('Database non configurato. Configura DATABASE_URL e esegui le migrazioni.');
+    
+    const results: { created: any[]; failed: { index: number; error: string; item: CreateProductCandidateInput }[] } = {
+      created: [],
+      failed: [],
+    };
+
+    // Create all items, collecting successes and failures
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]!;
+      try {
+        const candidate = await prisma.productCandidate.create({
+          data: {
+            name: item.name,
+            category: item.category,
+            description: item.description,
+            price: item.price ? item.price : undefined,
+            affiliateLink: item.affiliateLink,
+            affiliateProgram: item.affiliateProgram,
+            commissionPercentage: item.commissionPercentage ? item.commissionPercentage : undefined,
+            imageUrl: item.imageUrl,
+            rating: item.rating,
+            reviewCount: item.reviewCount,
+            source: item.source,
+            sourceId: item.sourceId,
+            metadata: item.metadata ? item.metadata : undefined,
+            status: 'pending',
+          },
+        });
+        results.created.push(candidate);
+      } catch (error) {
+        results.failed.push({
+          index: i,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          item: item,
+        });
+      }
+    }
+
+    return results;
+  },
+
   async delete(id: number) {
     if (!prisma) throw new Error('Database non configurato.');
     return prisma.productCandidate.delete({

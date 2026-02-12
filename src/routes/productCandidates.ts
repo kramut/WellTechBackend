@@ -4,6 +4,7 @@ import { productCandidateController } from '../controllers/productCandidateContr
 const router = Router();
 
 router.get('/', productCandidateController.getAll);
+router.post('/bulk', productCandidateController.bulkCreate);
 router.get('/:id', productCandidateController.getById);
 router.post('/', productCandidateController.create);
 router.put('/:id', productCandidateController.update);

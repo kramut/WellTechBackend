@@ -49,6 +49,59 @@ export const productCandidateController = {
     }
   },
 
+  async bulkCreate(req: Request, res: Response) {
+    try {
+      const { items } = req.body;
+
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({
+          error: 'Invalid request body. Expected { items: [ { name, category, affiliateLink, affiliateProgram, source, ... }, ... ] }',
+        });
+      }
+
+      if (items.length > 50) {
+        return res.status(400).json({
+          error: 'Too many items. Maximum 50 items per bulk request.',
+        });
+      }
+
+      // Validate each item before processing
+      const validationErrors: { index: number; error: string }[] = [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (!item.name || !item.category || !item.affiliateLink || !item.affiliateProgram || !item.source) {
+          validationErrors.push({
+            index: i,
+            error: 'Missing required fields: name, category, affiliateLink, affiliateProgram, source',
+          });
+        }
+      }
+
+      if (validationErrors.length > 0) {
+        return res.status(400).json({
+          error: 'Validation failed for some items',
+          validationErrors,
+        });
+      }
+
+      const results = await productCandidateService.createMany(items);
+
+      res.status(201).json({
+        success: true,
+        summary: {
+          total: items.length,
+          created: results.created.length,
+          failed: results.failed.length,
+        },
+        created: results.created,
+        failed: results.failed.length > 0 ? results.failed : undefined,
+      });
+    } catch (error) {
+      console.error('Error bulk creating product candidates:', error);
+      res.status(500).json({ error: 'Failed to bulk create product candidates' });
+    }
+  },
+
   async create(req: Request, res: Response) {
     try {
       const data: CreateProductCandidateInput = req.body;
