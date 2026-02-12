@@ -111,7 +111,10 @@ export async function analyzeLandingPage(affiliateLink: string): Promise<Analysi
 
   // Step 3: Call OpenAI for analysis
   try {
-    const openai = new OpenAI({ apiKey: openaiApiKey });
+    const openai = new OpenAI({
+      apiKey: openaiApiKey,
+      ...(process.env.OPENAI_BASE_URL ? { baseURL: process.env.OPENAI_BASE_URL } : {}),
+    });
     
     const completion = await openai.chat.completions.create({
       model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
