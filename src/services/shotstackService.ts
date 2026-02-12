@@ -131,10 +131,11 @@ function buildVoiceoverText(parsed: ParsedScript): string {
  * Build a Shotstack Edit API timeline for a short social video.
  * 
  * Structure:
- * - Track 1 (top): Text overlays (hook + CTA) using html assets
- * - Track 2 (middle): TTS voiceover using text-to-speech asset
+ * - Track 1 (top): Hook text (title asset)
+ * - Track 2: Body text / key message (html asset)
+ * - Track 3: CTA text (title asset)
  * 
- * Duration: 8-10 seconds as requested
+ * Uses solid background color. Duration: 8-10 seconds.
  */
 function buildTimeline(
   voiceoverText: string,
@@ -142,26 +143,50 @@ function buildTimeline(
   ctaText: string,
   videoDurationSec: number = 10
 ) {
-  // Keep voiceover short for 10s video
-  const shortVoiceover = voiceoverText.substring(0, 300);
+  // Extract a short key message from the script (first 2 sentences max)
+  const bodyText = voiceoverText
+    .replace(/\[.*?\]/g, '') // Remove [TIMING] markers
+    .split('.')
+    .slice(0, 2)
+    .join('.')
+    .trim()
+    .substring(0, 150);
 
   return {
     timeline: {
       background: '#1a1a2e',
       tracks: [
-        // Track 1: Text overlays (on top)
+        // Track 1: Hook text - first 4 seconds (on top of everything)
         {
           clips: [
-            // Hook text (first 4 seconds)
+            {
+              asset: {
+                type: 'title',
+                text: hookText.substring(0, 100),
+                style: 'blockbuster',
+                size: 'medium',
+              },
+              start: 0,
+              length: 4,
+              transition: {
+                in: 'fade',
+                out: 'fade',
+              },
+            },
+          ],
+        },
+        // Track 2: Body message - seconds 3-8
+        {
+          clips: [
             {
               asset: {
                 type: 'html',
-                html: `<p>${escapeHtml(hookText)}</p>`,
-                css: "p { font-family: 'Montserrat'; color: #ffffff; font-size: 38px; font-weight: 800; text-align: center; }",
-                width: 900,
-                height: 400,
+                html: `<p>${escapeHtml(bodyText)}</p>`,
+                css: "p { font-family: 'Open Sans'; color: #e0e0e0; font-size: 24px; text-align: center; line-height: 1.4; }",
+                width: 800,
+                height: 600,
               },
-              start: 0,
+              start: 3.5,
               length: 4,
               position: 'center',
               transition: {
@@ -169,35 +194,24 @@ function buildTimeline(
                 out: 'fade',
               },
             },
-            // CTA text (last 3 seconds)
-            {
-              asset: {
-                type: 'html',
-                html: `<p>${escapeHtml(ctaText)}</p>`,
-                css: "p { font-family: 'Montserrat'; color: #FFD700; font-size: 30px; font-weight: 700; text-align: center; }",
-                width: 900,
-                height: 200,
-              },
-              start: videoDurationSec - 3,
-              length: 3,
-              position: 'bottom',
-              transition: {
-                in: 'fade',
-              },
-            },
           ],
         },
-        // Track 2: TTS voiceover
+        // Track 3: CTA text - last 3 seconds
         {
           clips: [
             {
               asset: {
-                type: 'text-to-speech',
-                text: shortVoiceover,
-                voice: 'Giorgio',
+                type: 'title',
+                text: ctaText.substring(0, 60),
+                style: 'minimal',
+                size: 'small',
+                color: '#FFD700',
               },
-              start: 0.5,
-              length: 'auto',
+              start: videoDurationSec - 3,
+              length: 3,
+              transition: {
+                in: 'slideUp',
+              },
             },
           ],
         },
