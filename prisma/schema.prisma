@@ -103,6 +103,11 @@ model ProductCandidate {
   approvedAt          DateTime? @map("approved_at")
   approvedBy          String?   @map("approved_by") // User ID o email
   metadata            Json?     // Dati aggiuntivi
+  landingPageUrl      String?   @map("landing_page_url") @db.Text   // URL risolto dopo redirect
+  landingPageData     Json?     @map("landing_page_data")            // Analisi strutturata della landing page
+  analysisStatus      String?   @map("analysis_status")              // "pending", "analyzing", "completed", "failed"
+  analysisError       String?   @map("analysis_error") @db.Text      // Errore analisi se fallita
+  analyzedAt          DateTime? @map("analyzed_at")                   // Quando è stata analizzata
   createdAt           DateTime  @default(now()) @map("created_at")
   updatedAt           DateTime  @updatedAt @map("updated_at")
   
