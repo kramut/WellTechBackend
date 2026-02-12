@@ -315,7 +315,7 @@ export async function renderAndWait(
 ): Promise<{ success: boolean; url?: string; renderId?: string; error?: string }> {
   const submitResult = await submitRender(scriptText, hookOverride, ctaText);
   if (!submitResult.success || !submitResult.renderId) {
-    return { success: false, error: submitResult.error };
+    return { success: false, error: submitResult.error || 'Submit failed' };
   }
 
   const renderId = submitResult.renderId;
@@ -332,7 +332,7 @@ export async function renderAndWait(
     }
 
     if (statusResult.status === 'failed' || !statusResult.success) {
-      return { success: false, error: statusResult.error, renderId };
+      return { success: false, error: statusResult.error || 'Render failed', renderId };
     }
 
     // Still processing, continue polling
