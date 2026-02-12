@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { productCandidateService } from '../services/productCandidateService';
 import { CreateProductCandidateInput, UpdateProductCandidateInput } from '../types';
+import { prisma } from '../lib/prisma';
 
 export const productCandidateController = {
   async getAll(req: Request, res: Response) {
@@ -136,16 +137,99 @@ export const productCandidateController = {
     }
   },
 
+  /**
+   * POST /:id/approve
+   * Full approval flow:
+   * 1. Create a Product from the candidate data
+   * 2. Link article to the product (update productIds)
+   * 3. Publish the article (set publishedAt)
+   * 4. Link video to the article
+   * 5. Update candidate status to 'approved' with product reference
+   */
   async approve(req: Request, res: Response) {
     try {
+      if (!prisma) return res.status(503).json({ error: 'Database non configurato.' });
+
       const id = parseInt(req.params.id || '');
       if (isNaN(id)) {
         return res.status(400).json({ error: 'Invalid product candidate ID' });
       }
 
+      const candidate = await prisma.productCandidate.findUnique({ where: { id } });
+      if (!candidate) {
+        return res.status(404).json({ error: 'Candidato non trovato' });
+      }
+
+      if (candidate.status === 'approved') {
+        return res.status(400).json({ error: 'Candidato gia\' approvato' });
+      }
+
       const approvedBy = req.body.approvedBy || req.headers['x-user-id'] || 'system';
-      const candidate = await productCandidateService.approve(id, approvedBy);
-      res.json(candidate);
+      const metadata = (candidate.metadata as Record<string, any>) || {};
+      const lpData = (candidate.landingPageData as Record<string, any>) || {};
+
+      // Step 1: Create Product in the products table
+      const product = await prisma.product.create({
+        data: {
+          name: candidate.name,
+          category: lpData.category || candidate.category,
+          description: lpData.shortDescription || candidate.description || null,
+          price: candidate.price || null,
+          affiliateLink: candidate.affiliateLink,
+          affiliateProgram: candidate.affiliateProgram,
+          commissionPercentage: candidate.commissionPercentage || null,
+          imageUrl: candidate.imageUrl || null,
+        },
+      });
+
+      // Step 2 & 3: Update article - link to product and publish
+      let article = null;
+      if (metadata.articleId) {
+        article = await prisma.article.update({
+          where: { id: metadata.articleId },
+          data: {
+            productIds: [product.id],
+            publishedAt: new Date(),
+          },
+        });
+      }
+
+      // Step 4: Link video to article (if not already linked)
+      let video = null;
+      if (metadata.videoId) {
+        video = await prisma.video.update({
+          where: { id: metadata.videoId },
+          data: {
+            articleId: article ? article.id : null,
+          },
+        });
+      }
+
+      // Step 5: Update candidate status
+      const updatedCandidate = await prisma.productCandidate.update({
+        where: { id },
+        data: {
+          status: 'approved',
+          approvedAt: new Date(),
+          approvedBy,
+          rejectionReason: null,
+          metadata: {
+            ...metadata,
+            productId: product.id,
+            approvedProductName: product.name,
+            articlePublished: !!article?.publishedAt,
+          },
+        },
+      });
+
+      res.json({
+        success: true,
+        candidate: updatedCandidate,
+        product,
+        article: article ? { id: article.id, title: article.title, published: !!article.publishedAt } : null,
+        video: video ? { id: video.id, title: video.title, videoUrl: video.videoUrl } : null,
+        message: `Prodotto "${product.name}" creato e articolo pubblicato!`,
+      });
     } catch (error) {
       console.error('Error approving product candidate:', error);
       res.status(500).json({ error: 'Failed to approve product candidate' });
