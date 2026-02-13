@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { productCandidateService } from '../services/productCandidateService';
 import { CreateProductCandidateInput, UpdateProductCandidateInput } from '../types';
 import { prisma } from '../lib/prisma';
+import { contentPopulationService } from '../services/contentPopulationService';
 
 export const productCandidateController = {
   async getAll(req: Request, res: Response) {
@@ -222,13 +223,27 @@ export const productCandidateController = {
         },
       });
 
+      // Step 6: Auto-populate Guides, Paths, and Wizard recommendations
+      let contentPopulation = null;
+      try {
+        contentPopulation = await contentPopulationService.onProductApproved({
+          productId: product.id,
+          articleId: article ? article.id : null,
+          category: product.category,
+          productName: product.name,
+        });
+      } catch (popError) {
+        console.error('Warning: Content population failed (non-blocking):', popError);
+      }
+
       res.json({
         success: true,
         candidate: updatedCandidate,
         product,
         article: article ? { id: article.id, title: article.title, published: !!article.publishedAt } : null,
         video: video ? { id: video.id, title: video.title, videoUrl: video.videoUrl } : null,
-        message: `Prodotto "${product.name}" creato e articolo pubblicato!`,
+        contentPopulation,
+        message: `Prodotto "${product.name}" creato, articolo pubblicato, guide e percorsi aggiornati!`,
       });
     } catch (error) {
       console.error('Error approving product candidate:', error);

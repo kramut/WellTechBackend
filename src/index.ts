@@ -10,6 +10,10 @@ import affiliateEarningsRouter from './routes/affiliateEarnings';
 import analyticsRouter from './routes/analytics';
 import workflowsRouter from './routes/workflows';
 import productCandidatesRouter from './routes/productCandidates';
+import guidesRouter from './routes/guides';
+import pathsRouter from './routes/paths';
+import wizardRouter from './routes/wizard';
+import seedRouter from './routes/seed';
 
 // Middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -271,6 +275,10 @@ setTimeout(() => {
 }, 1000); // Aspetta 1 secondo dopo l'avvio del server
 
 app.use('/api/product-candidates', productCandidatesRouter);
+app.use('/api/guides', guidesRouter);
+app.use('/api/paths', pathsRouter);
+app.use('/api/wizard', wizardRouter);
+app.use('/api/seed', seedRouter);
 
 // Error handler (deve essere l'ultimo middleware)
 app.use(errorHandler);

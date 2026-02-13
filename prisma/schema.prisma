@@ -84,6 +84,49 @@ model Trend {
   @@map("trends")
 }
 
+model Guide {
+  id           Int       @id @default(autoincrement())
+  title        String
+  slug         String    @unique
+  description  String    @db.Text
+  category     String
+  duration     String?
+  difficulty   String?   @default("Media")
+  imageUrl     String?   @map("image_url") @db.Text
+  articleIds   Int[]     @map("article_ids")
+  productIds   Int[]     @map("product_ids")
+  publishedAt  DateTime? @map("published_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("guides")
+}
+
+model PathJourney {
+  id                Int       @id @default(autoincrement())
+  goalId            String    @unique @map("goal_id")
+  title             String
+  description       String    @db.Text
+  estimatedDuration String    @map("estimated_duration")
+  color             String
+  steps             Json      // Array of PathStep objects
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@map("path_journeys")
+}
+
+model WizardRecommendation {
+  id          Int       @id @default(autoincrement())
+  category    String    @unique
+  productIds  Int[]     @map("product_ids")
+  articleIds  Int[]     @map("article_ids")
+  guideIds    Int[]     @map("guide_ids")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("wizard_recommendations")
+}
+
 model ProductCandidate {
   id                  Int       @id @default(autoincrement())
   name                String
